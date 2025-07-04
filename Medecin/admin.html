@@ -1,0 +1,377 @@
+<!doctype html>
+<html class="no-js" lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Administration - Serveurs Orthanc</title>
+    <link rel="icon" href="img/favicon.png">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/icofont.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            padding: 50px 0;
+            min-height: 80vh;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+        .server-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .modal-header {
+            background: #667eea;
+            color: white;
+        }
+        .btn-action {
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header simplifié -->
+<header class="admin-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1><i class="fa fa-cog"></i> Administration des Serveurs Orthanc</h1>
+                <p>Gérez les serveurs DICOM de votre plateforme médicale</p>
+                <a href="orthanc.html" class="btn btn-light">
+                    <i class="fa fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="admin-container">
+    <div class="container">
+        <!-- Boutons d'action -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <button class="btn btn-success" id="btn-ajouter-serveur">
+                    <i class="fa fa-plus"></i> Ajouter un serveur
+                </button>
+                <button id="btn-actualiser-admin" class="btn btn-primary">
+                    <i class="fa fa-refresh"></i> Actualiser
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="message-admin" class="alert" style="display: none;"></div>
+
+        <!-- Tableau des serveurs -->
+        <div class="server-table">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Ville</th>
+                            <th>URL</th>
+                            <th>Statut</th>
+                            <th>Dernière synchro</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableau-serveurs">
+                        <tr>
+                            <td colspan="7" class="text-center">Chargement...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter/Modifier -->
+<div class="modal fade" id="modalAjouter" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un serveur</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="form-serveur">
+                <div class="modal-body">
+                    <input type="hidden" id="serveur-id" name="id">
+                    <div class="form-group">
+                        <label for="serveur-nom">Nom du serveur *</label>
+                        <input type="text" class="form-control" id="serveur-nom" name="nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serveur-ville">Ville *</label>
+                        <input type="text" class="form-control" id="serveur-ville" name="ville" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serveur-url">URL du serveur *</label>
+                        <input type="url" class="form-control" id="serveur-url" name="url" required 
+                               placeholder="http://exemple.com:8042">
+                    </div>
+                    <div class="form-group">
+                        <label for="serveur-actif">Statut</label>
+                        <select class="form-control" id="serveur-actif" name="actif">
+                            <option value="1">Actif</option>
+                            <option value="0">Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmation suppression -->
+<div class="modal fade" id="modalSupprimer" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce serveur ?</p>
+                <p><strong id="nom-serveur-supprimer"></strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" id="confirmer-suppression" class="btn btn-danger">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts avec Popper.js inclus -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+
+<!-- OU utilisez la version bundle qui inclut déjà Popper -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script> -->
+
+<script>
+$(document).ready(function() {
+    // Tester Bootstrap au chargement
+    setTimeout(function() {
+        testerBootstrap();
+    }, 1000);
+    
+    chargerServeursAdmin();
+    
+    // Gestionnaire pour le bouton ajouter
+    $('#btn-ajouter-serveur').click(function() {
+        console.log('Bouton ajouter cliqué'); // Pour debug
+        ouvrirModalAjout();
+    });
+    
+    // Actualiser
+    $('#btn-actualiser-admin').click(function() {
+        chargerServeursAdmin();
+    });
+    
+    // Bouton ajouter un serveur - forcer l'ouverture du modal
+    $('button[data-target="#modalAjouter"]').click(function() {
+        $('#modalAjouter').modal('show');
+    });
+    
+    // Formulaire d'ajout/modification
+    $('#form-serveur').submit(function(e) {
+        e.preventDefault();
+        sauvegarderServeur();
+    });
+    
+    // Réinitialiser le modal à la fermeture
+    $('#modalAjouter').on('hidden.bs.modal', function() {
+        $('#form-serveur')[0].reset();
+        $('#serveur-id').val('');
+        $('.modal-title').text('Ajouter un serveur');
+    });
+});
+
+function chargerServeursAdmin() {
+    $.getJSON('serveurs/admin_serveurs.php?action=lister')
+        .done(function(donnees) {
+            if (donnees.erreur) {
+                afficherMessageAdmin('danger', donnees.erreur);
+                return;
+            }
+            
+            let html = '';
+            if (donnees.length === 0) {
+                html = '<tr><td colspan="7" class="text-center">Aucun serveur configuré</td></tr>';
+            } else {
+                donnees.forEach(serveur => {
+                    const statusBadge = serveur.actif == 1 ? 
+                        '<span class="status-badge status-active">Actif</span>' :
+                        '<span class="status-badge status-inactive">Inactif</span>';
+                    
+                    html += `
+                    <tr>
+                        <td>${serveur.id}</td>
+                        <td>${serveur.nom}</td>
+                        <td>${serveur.ville}</td>
+                        <td><a href="${serveur.url}" target="_blank">${serveur.url}</a></td>
+                        <td>${statusBadge}</td>
+                        <td>${serveur.derniere_synchro || 'Jamais'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning btn-action" onclick="modifierServeur(${serveur.id})">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-action" onclick="supprimerServeur(${serveur.id}, '${serveur.nom}')">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            }
+            
+            $('#tableau-serveurs').html(html);
+        })
+        .fail(function() {
+            afficherMessageAdmin('danger', 'Erreur lors du chargement des serveurs');
+        });
+}
+
+function sauvegarderServeur() {
+    const formData = $('#form-serveur').serialize();
+    const action = $('#serveur-id').val() ? 'modifier' : 'ajouter';
+    
+    $.post('serveurs/admin_serveurs.php', formData + '&action=' + action)
+        .done(function(response) {
+            try {
+                const data = JSON.parse(response);
+                if (data.succes) {
+                    afficherMessageAdmin('success', data.message);
+                    $('#modalAjouter').modal('hide');
+                    chargerServeursAdmin();
+                } else {
+                    afficherMessageAdmin('danger', data.erreur);
+                }
+            } catch(e) {
+                afficherMessageAdmin('danger', 'Erreur de réponse du serveur');
+            }
+        })
+        .fail(function() {
+            afficherMessageAdmin('danger', 'Erreur lors de la sauvegarde');
+        });
+}
+
+function modifierServeur(id) {
+    $.getJSON('serveurs/admin_serveurs.php?action=obtenir&id=' + id)
+        .done(function(serveur) {
+            if (serveur.erreur) {
+                afficherMessageAdmin('danger', serveur.erreur);
+                return;
+            }
+            
+            $('#serveur-id').val(serveur.id);
+            $('#serveur-nom').val(serveur.nom);
+            $('#serveur-ville').val(serveur.ville);
+            $('#serveur-url').val(serveur.url);
+            $('#serveur-actif').val(serveur.actif);
+            $('.modal-title').text('Modifier le serveur');
+            $('#modalAjouter').modal('show');
+        });
+}
+
+function supprimerServeur(id, nom) {
+    $('#nom-serveur-supprimer').text(nom);
+    $('#confirmer-suppression').off('click').on('click', function() {
+        $.post('serveurs/admin_serveurs.php', {action: 'supprimer', id: id})
+            .done(function(response) {
+                try {
+                    const data = JSON.parse(response);
+                    if (data.succes) {
+                        afficherMessageAdmin('success', data.message);
+                        $('#modalSupprimer').modal('hide');
+                        chargerServeursAdmin();
+                    } else {
+                        afficherMessageAdmin('danger', data.erreur);
+                    }
+                } catch(e) {
+                    afficherMessageAdmin('danger', 'Erreur de réponse du serveur');
+                }
+            });
+    });
+    $('#modalSupprimer').modal('show');
+}
+
+function afficherMessageAdmin(type, message) {
+    const $message = $('#message-admin');
+    $message.removeClass('alert-success alert-danger alert-warning alert-info')
+            .addClass('alert-' + type)
+            .html(message)
+            .show();
+    
+    setTimeout(function() {
+        $message.fadeOut();
+    }, 5000);
+}
+
+// Fonction pour ouvrir le modal d'ajout
+function ouvrirModalAjout() {
+    // Réinitialiser le formulaire
+    $('#form-serveur')[0].reset();
+    $('#serveur-id').val('');
+    $('.modal-title').text('Ajouter un serveur');
+    
+    // Essayer différentes méthodes pour ouvrir le modal
+    try {
+        $('#modalAjouter').modal('show');
+    } catch(e) {
+        console.error('Erreur modal Bootstrap:', e);
+        // Méthode alternative
+        $('#modalAjouter').show();
+        $('body').addClass('modal-open');
+    }
+}
+
+// Fonction de test pour vérifier Bootstrap
+function testerBootstrap() {
+    if (typeof $.fn.modal === 'undefined') {
+        console.error('Bootstrap modal non disponible');
+        alert('Erreur: Bootstrap n\'est pas chargé correctement');
+        return false;
+    }
+    console.log('Bootstrap modal disponible');
+    return true;
+}
+</script>
+
+</body>
+</html>

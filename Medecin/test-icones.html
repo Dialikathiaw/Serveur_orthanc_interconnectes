@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des Icônes</title>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/icofont.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-test {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .icon-test i {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        .working { border-color: #28a745; background: #d4edda; }
+        .not-working { border-color: #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test des Icônes d'Hôpital</h1>
+    
+    <div class="test-section">
+        <h2>Test Icofont</h2>
+        <div class="icon-test">
+            <i class="icofont-hospital"></i>
+            <small>icofont-hospital</small>
+        </div>
+        <div class="icon-test">
+            <i class="icofont-medical-sign"></i>
+            <small>icofont-medical-sign</small>
+        </div>
+        <div class="icon-test">
+            <i class="icofont-doctor"></i>
+            <small>icofont-doctor</small>
+        </div>
+        <div class="icon-test">
+            <i class="icofont-ambulance"></i>
+            <small>icofont-ambulance</small>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Font Awesome</h2>
+        <div class="icon-test">
+            <i class="fa fa-hospital-o"></i>
+            <small>fa-hospital-o</small>
+        </div>
+        <div class="icon-test">
+            <i class="fa fa-plus-square"></i>
+            <small>fa-plus-square</small>
+        </div>
+        <div class="icon-test">
+            <i class="fa fa-building"></i>
+            <small>fa-building</small>
+        </div>
+        <div class="icon-test">
+            <i class="fa fa-home"></i>
+            <small>fa-home</small>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Diagnostic</h2>
+        <div id="diagnostic"></div>
+    </div>
+
+    <script>
+        // Test de diagnostic
+        setTimeout(function() {
+            let diagnostic = document.getElementById('diagnostic');
+            let html = '<h3>Résultats :</h3>';
+            
+            // Test Icofont
+            let icofontLoaded = false;
+            try {
+                let testElement = document.createElement('i');
+                testElement.className = 'icofont-hospital';
+                document.body.appendChild(testElement);
+                let computedStyle = window.getComputedStyle(testElement);
+                if (computedStyle.fontFamily && computedStyle.fontFamily.includes('IcoFont')) {
+                    icofontLoaded = true;
+                }
+                document.body.removeChild(testElement);
+            } catch(e) {}
+            
+            html += icofontLoaded ? 
+                '<p style="color: green;">✅ Icofont semble chargé</p>' : 
+                '<p style="color: red;">❌ Icofont non chargé ou problème</p>';
+            
+            // Test Font Awesome
+            let faLoaded = false;
+            try {
+                let testElement = document.createElement('i');
+                testElement.className = 'fa fa-hospital-o';
+                document.body.appendChild(testElement);
+                let computedStyle = window.getComputedStyle(testElement);
+                if (computedStyle.fontFamily && computedStyle.fontFamily.includes('FontAwesome')) {
+                    faLoaded = true;
+                }
+                document.body.removeChild(testElement);
+            } catch(e) {}
+            
+            html += faLoaded ? 
+                '<p style="color: green;">✅ Font Awesome semble chargé</p>' : 
+                '<p style="color: red;">❌ Font Awesome non chargé ou problème</p>';
+            
+            diagnostic.innerHTML = html;
+        }, 1000);
+    </script>
+</body>
+</html>

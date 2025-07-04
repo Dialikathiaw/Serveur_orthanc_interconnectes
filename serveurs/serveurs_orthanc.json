@@ -1,0 +1,23 @@
+[
+  {
+    "nom": "Hôpital Principal De Dakar",
+    "ville": "Dakar",
+    "url": "http://localhost:8042",
+    "actif": true,
+    "derniere_synchro": "il y a 5 minutes"
+  },
+  {
+    "nom": "Hôpital Aristide Le Dantec",
+    "ville": "Dakar",
+    "url": "http://localhost:8042",
+    "actif": true,
+    "derniere_synchro": null
+  },
+  {
+    "nom": "Hôpital de Ziguinchor",
+    "ville": "Ziguinchor",
+    "url": "http://localhost:8042",
+    "actif": true,
+    "derniere_synchro": "il y a 10 minutes"
+  }
+]

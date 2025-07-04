@@ -1,0 +1,9 @@
+{
+    "name": "7maksacodpc/connexion",
+    "description": "Connexion avec Google Authenticator",
+    "require": {
+        "sonata-project/google-authenticator": "^2.3"
+    },
+    "license": "MIT",
+    "minimum-stability": "stable"
+}

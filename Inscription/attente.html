@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediPlus - Demande en cours</title>
+    <link rel="icon" href="../img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Canvas pour l'animation de réseau */
+        #networkCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Container principal */
+        .main-container {
+            position: relative;
+            z-index: 100;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 40px 20px;
+        }
+
+        /* Header IDENTIQUE */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 40px;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+            animation: slideDown 1s ease-out;
+        }
+
+        .logo-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 35px;
+            width: auto;
+            filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .contact-header {
+            display: flex;
+            gap: 25px;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item:hover {
+            color: #3b82f6;
+        }
+
+        /* Card d'attente */
+        .waiting-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 30px;
+            padding: 60px 50px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 
+                0 25px 50px rgba(16, 185, 129, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+            animation: cardEntrance 1.2s ease-out;
+            text-align: center;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .waiting-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .waiting-card:hover::before {
+            left: 100%;
+        }
+
+        /* Icône de succès */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px auto;
+            animation: pulse 2s infinite;
+        }
+
+        .success-icon::before {
+            content: '✓';
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        /* Titre et texte */
+        .waiting-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #059669, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .waiting-subtitle {
+            color: #64748b;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .waiting-description {
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        /* Étapes du processus */
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 15px;
+            border-left: 4px solid #10b981;
+            animation: fadeInUp 1s ease-out both;
+        }
+
+        .step:nth-child(1) { animation-delay: 0.6s; }
+        .step:nth-child(2) { animation-delay: 0.7s; }
+        .step:nth-child(3) { animation-delay: 0.8s; }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .step-text {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+            color: #374151;
+            text-decoration: none;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 20px;
+                height: 50px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .contact-header {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+                font-size: 0.8rem;
+            }
+
+            .main-container {
+                padding: 100px 20px 20px 20px;
+            }
+
+            .waiting-card {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .waiting-title {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .waiting-card {
+                padding: 30px 20px;
+            }
+
+            .waiting-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas pour l'animation de réseau -->
+    <canvas id="networkCanvas"></canvas>
+
+    <!-- Header IDENTIQUE -->
+    <header class="header">
+        <div class="logo-header">
+            <img src="../Medecin/img/logo.png" alt="MediPlus" class="logo-img">
+        </div>
+        <div class="contact-header">
+            <div class="contact-item">
+                <span>📞</span>
+                <span>+221 33 123 45 67</span>
+            </div>
+            <div class="contact-item">
+                <span>✉️</span>
+                <span>support@mediplus.sn</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Container principal -->
+    <div class="main-container">
+        <div class="waiting-card">
+            <!-- Icône de succès -->
+            <div class="success-icon"></div>
+
+            <!-- Titre et description -->
+            <h1 class="waiting-title">Demande Envoyée !</h1>
+            <p class="waiting-subtitle">Votre inscription a été transmise avec succès</p>
+            <p class="waiting-description">
+                Votre demande d'accès à la plateforme MediPlus est maintenant en cours de traitement. 
+                Un administrateur va examiner votre profil et valider votre inscription.
+            </p>
+
+            <!-- Étapes du processus -->
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Votre demande a été reçue et enregistrée</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Un administrateur va vérifier vos informations</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Vous recevrez un email de confirmation</div>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="action-buttons">
+                <a href="../connexion/connexion.html" class="btn btn-primary">
+                    🔐 Retour à la connexion
+                </a>
+                <a href="../Medecin/index.php" class="btn btn-secondary">
+                    🏠 Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation de réseau de particules IDENTIQUE
+        class NetworkAnimation {
+            constructor() {
+                this.canvas = document.getElementById('networkCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: null, y: null, radius: 150 };
+                
+                this.init();
+                this.animate();
+                this.bindEvents();
+            }
+
+            init() {
+                this.resizeCanvas();
+                this.createParticles();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createParticles() {
+                const numberOfParticles = Math.floor((this.canvas.width * this.canvas.height) / 15000);
+                
+                for (let i = 0; i < numberOfParticles; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        radius: Math.random() * 3 + 1
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach((particle, index) => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    
+                    if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+                    if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+                    
+                    if (this.mouse.x !== null && this.mouse.y !== null) {
+                        const dx = this.mouse.x - particle.x;
+                        const dy = this.mouse.y - particle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < this.mouse.radius) {
+                            const force = (this.mouse.radius - distance) / this.mouse.radius;
+                            const angle = Math.atan2(dy, dx);
+                            particle.vx -= Math.cos(angle) * force * 0.5;
+                            particle.vy -= Math.sin(angle) * force * 0.5;
+                        }
+                    }
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = 'rgba(59, 130, 246, 0.6)';
+                    this.ctx.fill();
+                    
+                    this.particles.slice(index + 1).forEach(otherParticle => {
+                        const dx = particle.x - otherParticle.x;
+                        const dy = particle.y - otherParticle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 120) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(otherParticle.x, otherParticle.y);
+                            this.ctx.strokeStyle = `rgba(59, 130, 246, ${0.3 * (1 - distance / 120)})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    });
+                });
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    this.particles = [];
+                    this.createParticles();
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                window.addEventListener('mouseleave', () => {
+                    this.mouse.x = null;
+                    this.mouse.y = null;
+                });
+            }
+        }
+
+        // Initialiser l'animation
+        new NetworkAnimation();
+    </script>
+</body>
+</html>

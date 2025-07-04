@@ -1,0 +1,263 @@
+<!doctype html>
+<html class="no-js" lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="keywords" content="Orthanc, DICOM, serveurs médicaux, hôpitaux">
+    <meta name="description" content="Accédez à la liste des serveurs Orthanc connectés pour la gestion d'images médicales.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Serveurs Orthanc - Plateforme Médicale</title>
+    <link rel="icon" href="img/favicon.png">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/nice-select.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/icofont.css">
+    <link rel="stylesheet" href="css/slicknav.min.css">
+    <link rel="stylesheet" href="css/owl-carousel.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        .status-icon {
+            font-size: 12px;
+            margin-right: 5px;
+            display: none;
+        }
+        .status-active {
+            color: #28a745;
+        }
+        .status-inactive {
+            color: #dc3545;
+        }
+        .refresh-btn {
+            margin-bottom: 30px;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .admin-link {
+            margin-left: 15px;
+        }
+        .server-card {
+            transition: all 0.3s ease;
+        }
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header Area -->
+<header class="header">
+    <div class="topbar">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-5 col-12">
+                    <ul class="top-link">
+                        <li><a href="index.php">Accueil</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#">À propos</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-6 col-md-7 col-12">
+                    <ul class="top-contact">
+                        <li><i class="fa fa-phone"></i> +221 33 123 45 67</li>
+                        <li><i class="fa fa-envelope"></i> <a href="mailto:support@plateforme-medicale.sn">support@plateforme-medicale.sn</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="header-inner">
+        <div class="container">
+            <div class="inner">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-12">
+                        <div class="logo">
+                            <a href="index.php"><img src="img/logo.png" alt="Plateforme Médicale"></a>
+                        </div>
+                        <div class="mobile-nav"></div>
+                    </div>
+                    <div class="col-lg-7 col-md-9 col-12">
+                        <div class="main-menu">
+                            <nav class="navigation">
+                                <ul class="nav menu">
+                                    <li><a href="index.php">Accueil</a></li>
+                                    <li class="active"><a href="orthanc.html">Serveurs Orthanc</a></li>
+                                    <li><a href="fichiers.php">Fichiers Non DICOM</a></li>
+                                    <li><a href="patients.php">Gestion des patients</a></li>
+                                    <li><a href="dashboard.php">Tableau de Bord</a></li>
+                                    <li><a href="statistiques.php">Statistiques</a></li>
+                                    <li><a href="contact.html">Contact</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-12">
+                        <div class="get-quote">
+                            <a href="dashboard.php" class="btn">Accéder</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- End Header Area -->
+
+<!-- Full-width Banner Section -->
+<section class="page-banner" style="background: url('img/eee.jpg') no-repeat center center/cover; height: 85vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1>Serveurs Orthanc Connectés</h1>
+            <p style="font-size: 18px;">Consultez et administrez les serveurs DICOM de chaque hôpital connecté à la plateforme.</p>
+        </div>
+    </div>
+</section>
+<!-- End Banner -->
+
+<!-- Liste des serveurs -->
+<section class="services section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Liste des Serveurs Orthanc Disponibles</h2>
+            <p>Retrouvez ci-dessous les hôpitaux et leurs serveurs actuellement connectés.</p>
+        </div>
+        
+        <!-- Boutons d'action -->
+        <div class="row">
+            <div class="col-12 text-center" style="margin-bottom: 30px;">
+                <button id="btn-actualiser" class="btn btn-primary">
+                    <i class="fa fa-refresh"></i> Actualiser la liste
+                </button>
+                <a href="admin.html" class="btn btn-secondary" style="margin-left: 15px;">
+                    <i class="fa fa-cog"></i> Administration
+                </a>
+            </div>
+        </div>
+
+        <!-- Message de statut -->
+        <div id="message-statut" class="alert" style="display: none;"></div>
+
+        <!-- Liste des serveurs -->
+        <div class="row" id="liste-serveurs">
+            <div class="col-12 text-center">
+                <p>Chargement des serveurs...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/owl.carousel.min.js"></script>
+<script src="js/slicknav.min.js"></script>
+<script src="js/magnific-popup.min.js"></script>
+<script src="js/waypoints.min.js"></script>
+<script src="js/jquery.counterup.min.js"></script>
+<script src="js/active.js"></script>
+
+<script>
+$(document).ready(function () {
+    // Charger les serveurs au démarrage
+    chargerServeurs();
+    
+    // Bouton actualiser
+    $('#btn-actualiser').click(function() {
+        chargerServeurs();
+    });
+});
+
+function chargerServeurs() {
+    const $btnActualiser = $('#btn-actualiser');
+    const $listeServeurs = $('#liste-serveurs');
+    const $messageStatut = $('#message-statut');
+    
+    // Désactiver le bouton et ajouter l'effet de chargement
+    $btnActualiser.prop('disabled', true).addClass('loading');
+    $btnActualiser.find('i').addClass('fa-spin');
+    
+    // Masquer les messages précédents
+    $messageStatut.hide();
+    
+    $.getJSON("serveurs/liste_serveurs.php")
+        .done(function (donnees) {
+            if (donnees.erreur) {
+                afficherMessage('danger', 'Erreur : ' + donnees.erreur);
+                return;
+            }
+            
+            // Vider le conteneur
+            $listeServeurs.empty();
+            
+            let serveursActifs = 0;
+            let serveursTotal = donnees.length;
+            
+            if (serveursTotal === 0) {
+                $listeServeurs.html('<div class="col-12 text-center"><p>Aucun serveur configuré.</p></div>');
+            } else {
+                donnees.forEach(serveur => {
+                    const statusIcon = serveur.actif == 1 ? 
+                        '<i class="fa fa-circle status-icon status-active"></i>' : 
+                        '<i class="fa fa-circle status-icon status-inactive"></i>';
+                    
+                    const statusText = serveur.actif == 1 ? 'Serveur actif' : 'Serveur inactif';
+                    const btnClass = serveur.actif == 1 ? 'btn btn-primary' : 'btn btn-secondary disabled';
+                    const btnText = serveur.actif == 1 ? 'Accéder aux images' : 'Indisponible';
+                    const cardClass = serveur.actif == 1 ? 'server-card' : 'server-card';
+                    
+                    if (serveur.actif == 1) serveursActifs++;
+                    
+                    // Créer l'élément avec jQuery au lieu d'innerHTML
+                    const $col = $('<div class="col-lg-4 col-md-6 col-12">');
+                    const $service = $('<div class="single-service ' + cardClass + '">');
+                    const $icon = $('<i class="icofont-hospital">');
+                    const $title = $('<h4>').html(statusIcon + serveur.nom);
+                    const $ville = $('<p>').html('<strong>Ville:</strong> ' + serveur.ville);
+                    const $status = $('<p>').text(statusText + ' – Synchronisation ' + (serveur.derniere_synchro || "inconnue") + '.');
+                    const $btn = $('<a href="' + serveur.url + '" class="' + btnClass + '" target="_blank">').text(btnText);
+                    
+                    $service.append($icon, $title, $ville, $status, $btn);
+                    $col.append($service);
+                    $listeServeurs.append($col);
+                });
+                
+                // Afficher un message de statut
+                afficherMessage('info', `${serveursActifs}/${serveursTotal} serveurs actifs`);
+            }
+        })
+        .fail(function(xhr, status, error) {
+            console.error('Erreur AJAX:', error);
+            afficherMessage('danger', 'Impossible de charger la liste des serveurs. Vérifiez votre connexion.');
+            $listeServeurs.html('<div class="col-12 text-center"><p class="text-danger">Erreur de chargement</p></div>');
+        })
+        .always(function() {
+            // Réactiver le bouton
+            $btnActualiser.prop('disabled', false).removeClass('loading');
+            $btnActualiser.find('i').removeClass('fa-spin');
+        });
+}
+
+function afficherMessage(type, message) {
+    const $messageStatut = $('#message-statut');
+    $messageStatut.removeClass('alert-success alert-danger alert-warning alert-info')
+                  .addClass('alert-' + type)
+                  .html(message)
+                  .show();
+    
+    // Masquer automatiquement après 5 secondes
+    setTimeout(function() {
+        $messageStatut.fadeOut();
+    }, 5000);
+}
+</script>
+
+</body>
+</html>

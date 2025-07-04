@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediPlus - Connexion Sécurisée</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Canvas pour l'animation de réseau */
+        #networkCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Container principal - BEAUCOUP plus d'espace en haut */
+        .main-container {
+            position: relative;
+            z-index: 100;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 40px 20px; /* Réduit le padding-top et ajouté padding-bottom */
+        }
+
+        /* Header RÉDUIT */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 40px; /* Réduit de 20px à 15px */
+            height: 60px; /* Réduit de 80px à 60px */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+            animation: slideDown 1s ease-out;
+        }
+
+        /* Logo SEUL (sans texte) */
+        .logo-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 35px; /* Légèrement réduit */
+            width: auto;
+            filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3));
+        }
+
+        .contact-header {
+            display: flex;
+            gap: 25px; /* Réduit un peu */
+            color: #64748b;
+            font-size: 0.85rem; /* Légèrement plus petit */
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item:hover {
+            color: #3b82f6;
+        }
+
+        /* Card de connexion ultra-moderne */
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 30px;
+            padding: 60px 50px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 
+                0 25px 50px rgba(59, 130, 246, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            position: relative;
+            overflow: hidden;
+            animation: cardEntrance 1.2s ease-out;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .login-card:hover::before {
+            left: 100%;
+        }
+
+        /* Logo et titre */
+        .brand {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .brand h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .brand p {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        /* Formulaire */
+        .form-group {
+            margin-bottom: 25px;
+            animation: fadeInUp 1s ease-out both;
+        }
+
+        .form-group:nth-child(2) { animation-delay: 0.4s; }
+        .form-group:nth-child(3) { animation-delay: 0.5s; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(248, 250, 252, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 15px;
+            color: #1f2937;
+            font-size: 1rem;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #3b82f6;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Options du formulaire */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            margin-right: 10px;
+            width: auto;
+            transform: scale(1.2);
+            accent-color: #3b82f6;
+        }
+
+        .forgot-password {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .forgot-password::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .forgot-password:hover::after {
+            width: 100%;
+        }
+
+        /* Bouton de connexion spectaculaire */
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease-out 0.7s both;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .login-btn:hover::before {
+            left: 0;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Divider */
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            animation: fadeInUp 1s ease-out 0.8s both;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0 20px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+        }
+
+        /* Lien d'inscription */
+        .register-link {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.95rem;
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        .register-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .register-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .register-link a:hover::after {
+            width: 100%;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading state */
+        .login-btn.loading {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        .login-btn.loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 20px;
+                height: 50px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .contact-header {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+                font-size: 0.8rem;
+            }
+
+            .main-container {
+                padding: 100px 20px 20px 20px;
+            }
+
+            .login-card {
+                padding: 40px 30px;
+                margin: 20px;
+            }
+
+            .brand h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-options {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+
+            .brand h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas pour l'animation de réseau -->
+    <canvas id="networkCanvas"></canvas>
+
+    <!-- Header COMPACT avec LOGO SEUL -->
+    <header class="header">
+        <div class="logo-header">
+            <img src="../Medecin/img/logo.png" alt="MediPlus" class="logo-img">
+        </div>
+        <div class="contact-header">
+            <div class="contact-item">
+                <span>📞</span>
+                <span>+221 33 123 45 67</span>
+            </div>
+            <div class="contact-item">
+                <span>✉️</span>
+                <span>support@mediplus.sn</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Container principal BIEN DESCENDU -->
+    <div class="main-container">
+        <div class="login-card">
+            <!-- Brand -->
+            <div class="brand">
+                <h1>MediPlus</h1>
+                <p>Plateforme Médicale Nationale du Sénégal</p>
+            </div>
+
+            <!-- Formulaire - SUPPRESSION de e.preventDefault() -->
+            <form action="traitement_login.php" method="POST" id="loginForm">
+                <div class="form-group">
+                    <label for="email">Adresse email professionnelle</label>
+                    <div class="input-container">
+                        <input type="email" id="email" name="email" placeholder="votre.email@mediplus.sn" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mot de passe sécurisé</label>
+                    <div class="input-container">
+                        <input type="password" id="password" name="password" placeholder="••••••••••" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember">
+                        Maintenir la session
+                    </label>
+                    <a href="#" class="forgot-password">Récupérer l'accès</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Accéder à la plateforme
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>Accès sécurisé</span>
+            </div>
+
+            <div class="register-link">
+                Nouveau professionnel de santé ? 
+                <a href="../Inscription/register.html">Demander un accès</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation de réseau de particules
+        class NetworkAnimation {
+            constructor() {
+                this.canvas = document.getElementById('networkCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: null, y: null, radius: 150 };
+                
+                this.init();
+                this.animate();
+                this.bindEvents();
+            }
+
+            init() {
+                this.resizeCanvas();
+                this.createParticles();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createParticles() {
+                const numberOfParticles = Math.floor((this.canvas.width * this.canvas.height) / 15000);
+                
+                for (let i = 0; i < numberOfParticles; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        radius: Math.random() * 3 + 1
+                    });
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Mettre à jour et dessiner les particules
+                this.particles.forEach((particle, index) => {
+                    // Mouvement
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    
+                    // Rebond sur les bords
+                    if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
+                    if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
+                    
+                    // Interaction avec la souris (effet de fuite)
+                    if (this.mouse.x !== null && this.mouse.y !== null) {
+                        const dx = this.mouse.x - particle.x;
+                        const dy = this.mouse.y - particle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < this.mouse.radius) {
+                            const force = (this.mouse.radius - distance) / this.mouse.radius;
+                            const angle = Math.atan2(dy, dx);
+                            particle.vx -= Math.cos(angle) * force * 0.5;
+                            particle.vy -= Math.sin(angle) * force * 0.5;
+                        }
+                    }
+                    
+                    // Dessiner la particule
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = 'rgba(59, 130, 246, 0.6)';
+                    this.ctx.fill();
+                    
+                    // Dessiner les connexions
+                    this.particles.slice(index + 1).forEach(otherParticle => {
+                        const dx = particle.x - otherParticle.x;
+                        const dy = particle.y - otherParticle.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 120) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(particle.x, particle.y);
+                            this.ctx.lineTo(otherParticle.x, otherParticle.y);
+                            this.ctx.strokeStyle = `rgba(59, 130, 246, ${0.3 * (1 - distance / 120)})`;
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    });
+                });
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    this.particles = [];
+                    this.createParticles();
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                window.addEventListener('mouseleave', () => {
+                    this.mouse.x = null;
+                    this.mouse.y = null;
+                });
+            }
+        }
+
+        // Initialiser l'animation
+        new NetworkAnimation();
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+
+        // SUPPRESSION de la simulation JavaScript - Le formulaire se soumet normalement
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            // Animation du bouton seulement
+            const btn = document.getElementById('loginBtn');
+            btn.classList.add('loading');
+            btn.textContent = 'Authentification en cours...';
+            
+            // Le formulaire se soumet normalement vers traitement_login.php
+            // Le PHP gérera la redirection selon le rôle
+        });
+
+        // Effets au focus des inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
